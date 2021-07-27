@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import CommentBox from './CommentBox';
 
-import commentAPI from '../apis/commentAPI';
+import useInfiniteScroll from '../hooks/useInfiniteScroll';
 
 const Container = styled.div`
   display: flex;
@@ -13,43 +13,7 @@ const Container = styled.div`
 `;
 
 const InfiniteScrollList = () => {
-  const [page, setPage] = useState(1);
-  const [commentList, setCommentList] = useState([]);
-  const sentinelRef = useRef(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    (async () => {
-      const data = await commentAPI.getComments(page);
-      setCommentList((prev) => [...prev, ...data]);
-      setLoading(false);
-    })();
-  }, [page]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (!loading) {
-            setPage((prev) => prev + 1);
-          }
-        }
-      });
-    });
-
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
-    }
-
-    const sentinelRefValue = sentinelRef.current;
-
-    return () => {
-      if (sentinelRef) {
-        observer.unobserve(sentinelRefValue);
-      }
-    };
-  }, [loading]);
+  const { loading, commentList, sentinelRef } = useInfiniteScroll();
 
   return (
     <Container>
